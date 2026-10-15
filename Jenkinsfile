@@ -22,15 +22,12 @@ pipeline {
                 bat 'findstr /C:"registrationForm" index.html'
                 bat 'findstr /C:"facultySummary" index.html'
                 bat 'findstr /C:"CodeSprint Hackathon" index.html'
-                echo 'Application checks passed.'
+                echo 'Application tests passed.'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    dockerImage = "${IMAGE_NAME}:${BUILD_NUMBER}"
-                }
                 bat "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
             }
         }
@@ -49,18 +46,42 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Deploy with Automatic Rollback') {
             steps {
                 withCredentials([file(
                     credentialsId: 'kubeconfig-file',
                     variable: 'KUBECONFIG'
                 )]) {
-                    bat 'kubectl get nodes'
-                    bat "kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=${IMAGE_NAME}:${BUILD_NUMBER}"
-                    bat "kubectl rollout status deployment/${DEPLOYMENT_NAME} --timeout=180s"
-                    bat "kubectl scale deployment/${DEPLOYMENT_NAME} --replicas=3"
-                    bat "kubectl get pods -l app=college-event-management"
-                    bat "kubectl get service ${SERVICE_NAME}"
+                    script {
+                        bat "kubectl rollout history deployment/${DEPLOYMENT_NAME}"
+
+                        def previousImage = bat(
+                            script: "kubectl get deployment ${DEPLOYMENT_NAME} -o jsonpath=\"{.spec.template.spec.containers[0].image}\"",
+                            returnStdout: true
+                        ).trim()
+
+                        def targetImage = "${IMAGE_NAME}:${BUILD_NUMBER}"
+
+                        bat "kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=${targetImage}"
+
+                        def rolloutResult = bat(
+                            script: "kubectl rollout status deployment/${DEPLOYMENT_NAME} --timeout=120s",
+                            returnStatus: true
+                        )
+
+                        if (rolloutResult != 0) {
+                            echo 'Deployment failed. Rolling back to the previous working image.'
+
+                            bat "kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=${previousImage}"
+                            bat "kubectl rollout status deployment/${DEPLOYMENT_NAME} --timeout=180s"
+
+                            error('New deployment failed. Automatic rollback was performed.')
+                        }
+
+                        bat "kubectl scale deployment/${DEPLOYMENT_NAME} --replicas=3"
+                        bat "kubectl get pods -l app=college-event-management"
+                        bat "kubectl get service ${SERVICE_NAME}"
+                    }
                 }
             }
         }
@@ -68,10 +89,10 @@ pipeline {
 
     post {
         success {
-            echo 'College Event Management deployment completed successfully.'
+            echo 'Deployment completed successfully.'
         }
         failure {
-            echo 'Pipeline failed. Check the Jenkins console output.'
+            echo 'Pipeline failed. Check the console output and rollback status.'
         }
     }
 }

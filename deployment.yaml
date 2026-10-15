@@ -1,0 +1,22 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: college-event-management-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: college-event-management
+  template:
+    metadata:
+      labels:
+        app: college-event-management
+    spec:
+      containers:
+        - name: college-event-management
+          image: deepasri111/college-event-management:latest
+          ports:
+            - containerPort: 80
+          imagePullPolicy: Always
+

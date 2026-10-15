@@ -1,0 +1,217 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CampusConnect | College Events</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f5f7fc;color:#202844}
+header{background:#172554;color:white;padding:22px 7%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+header h1{margin:0;font-size:25px}
+header p{margin:6px 0 0;color:#c7d2fe}
+nav a{color:white;text-decoration:none;margin:8px;font-weight:bold}
+.hero{padding:55px 7%;background:linear-gradient(120deg,#312e81,#2563eb);color:white}
+.hero h2{font-size:38px;margin:0 0 14px}
+.hero p{max-width:650px;line-height:1.7}
+button{background:#4f46e5;color:white;border:0;border-radius:8px;padding:11px 16px;cursor:pointer;font-weight:bold}
+button:hover{background:#3730a3}
+main{padding:28px 7%}
+.section-title{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+input,select,textarea{padding:11px;border:1px solid #cbd5e1;border-radius:7px;font:inherit;max-width:100%}
+#search{width:280px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.events{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:20px}
+.card{background:white;border-radius:13px;padding:20px;box-shadow:0 4px 18px #0f172a12;border:1px solid #e5e7eb}
+.tag{display:inline-block;background:#e0e7ff;color:#3730a3;border-radius:20px;padding:5px 10px;font-size:12px;font-weight:bold}
+.card h3{margin:13px 0 8px}
+.card p{line-height:1.5;color:#475569}
+.meta{font-size:14px;color:#334155;line-height:1.9}
+.notice{background:#eef2ff;padding:17px;border-radius:10px;margin:22px 0;line-height:1.7}
+.panel{background:white;padding:22px;border-radius:12px;margin-top:25px;box-shadow:0 4px 18px #0f172a0c}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+form button{align-self:center}
+#message{font-weight:bold;color:#047857}
+table{border-collapse:collapse;width:100%;margin-top:12px}
+th,td{text-align:left;padding:10px;border-bottom:1px solid #e2e8f0}
+footer{text-align:center;background:#172554;color:white;padding:22px;margin-top:30px}
+.small{font-size:13px;color:#64748b}
+@media(max-width:600px){.hero h2{font-size:29px}header{padding:20px}.hero,main{padding:25px 5%}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>CampusConnect</h1>
+    <p>Your campus. Your events. Your experience.</p>
+  </div>
+  <nav>
+    <a href="#events">Events</a>
+    <a href="#register">Register</a>
+    <a href="#status">My Registrations</a>
+    <a href="#faculty">Faculty</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <h2>Discover What's Happening on Campus</h2>
+  <p>Explore workshops, technical competitions, cultural celebrations and student activities. Find your next opportunity, register online and keep track of your registrations.</p>
+  <a href="#events"><button>Explore Events</button></a>
+</section>
+
+<main>
+  <div class="section-title">
+    <div>
+      <h2 id="events">Upcoming College Events</h2>
+      <p>Find an event that matches your interests.</p>
+    </div>
+    <input id="search" placeholder="Search events or venues..." oninput="renderEvents()">
+  </div>
+
+  <div class="filters">
+    <select id="category" onchange="renderEvents()">
+      <option value="All">All categories</option>
+      <option>Technology</option>
+      <option>Workshop</option>
+      <option>Cultural</option>
+      <option>Sports</option>
+      <option>Career</option>
+    </select>
+    <select id="sort" onchange="renderEvents()">
+      <option value="date">Sort by date</option>
+      <option value="name">Sort by event name</option>
+    </select>
+  </div>
+
+  <div id="eventList" class="events"></div>
+
+  <div class="notice">
+    <strong>Event updates:</strong>
+    Registration details and event announcements are displayed here. Check each event's date, venue and available seats before registering.
+    <div id="updates">Latest update: CampusConnect event registration is now open!</div>
+  </div>
+
+  <section class="panel" id="register">
+    <h2>Student Registration</h2>
+    <p>Choose an event and enter your details to register.</p>
+    <form id="registrationForm">
+      <input id="studentName" placeholder="Full name" required>
+      <input id="studentId" placeholder="Register number" required>
+      <input id="studentEmail" type="email" placeholder="College email" required>
+      <select id="eventChoice" required>
+        <option value="">Select an event</option>
+      </select>
+      <button type="submit">Register Now</button>
+    </form>
+    <p id="message" role="status"></p>
+    <p class="small">Demo website: registrations are saved in this browser only.</p>
+  </section>
+
+  <section class="panel" id="status">
+    <h2>My Registrations</h2>
+    <p>Enter your register number to view your saved registrations.</p>
+    <div class="filters">
+      <input id="lookupId" placeholder="Enter register number">
+      <button onclick="checkStatus()">Check Status</button>
+    </div>
+    <div id="statusResults"></div>
+  </section>
+
+  <section class="panel" id="faculty">
+    <h2>Faculty Coordinator Dashboard</h2>
+    <p>Demonstration dashboard to create an event and monitor registrations.</p>
+    <form id="facultyForm">
+      <input id="newTitle" placeholder="Event title" required>
+      <select id="newCategory">
+        <option>Technology</option><option>Workshop</option><option>Cultural</option><option>Sports</option><option>Career</option>
+      </select>
+      <input id="newDate" type="date" required>
+      <input id="newTime" type="time" required>
+      <input id="newVenue" placeholder="Venue" required>
+      <input id="newCapacity" type="number" min="1" placeholder="Participant limit" required>
+      <textarea id="newDescription" placeholder="Event description" required></textarea>
+      <button type="submit">Create Event</button>
+    </form>
+    <h3>Registration Summary</h3>
+    <div id="facultySummary"></div>
+    <p class="small">This is a frontend demonstration, not a secure faculty login or shared database.</p>
+  </section>
+</main>
+
+<footer>
+  <strong>CampusConnect</strong>
+  <p>College Event Management Portal | Learn • Connect • Participate</p>
+</footer>
+
+<script>
+const initialEvents = [
+ {id:1,title:"CodeSprint Hackathon",category:"Technology",date:"2026-11-05",time:"09:00",venue:"Innovation Lab",capacity:100,description:"Build creative software solutions in a team-based coding challenge."},
+ {id:2,title:"AI and Machine Learning Workshop",category:"Workshop",date:"2026-11-10",time:"10:00",venue:"Seminar Hall A",capacity:60,description:"Explore AI concepts, practical tools and machine learning applications."},
+ {id:3,title:"Campus Cultural Fest",category:"Cultural",date:"2026-11-14",time:"15:00",venue:"Main Auditorium",capacity:250,description:"Celebrate music, dance, art and the diverse talents of our campus."},
+ {id:4,title:"Interdepartment Sports Meet",category:"Sports",date:"2026-11-18",time:"08:00",venue:"College Sports Ground",capacity:150,description:"Join fellow students for team sports and friendly competition."},
+ {id:5,title:"Career and Placement Connect",category:"Career",date:"2026-11-22",time:"11:00",venue:"Conference Hall",capacity:120,description:"Learn about career paths, interview preparation and industry expectations."},
+ {id:6,title:"Cloud Computing Bootcamp",category:"Workshop",date:"2026-11-28",time:"09:30",venue:"Computer Lab 2",capacity:50,description:"Get introduced to cloud services, containers and deployment basics."}
+];
+let events = JSON.parse(localStorage.getItem("cc_events") || "null") || initialEvents;
+let registrations = JSON.parse(localStorage.getItem("cc_registrations") || "[]");
+
+function save(){
+ localStorage.setItem("cc_events",JSON.stringify(events));
+ localStorage.setItem("cc_registrations",JSON.stringify(registrations));
+}
+function renderEvents(){
+ const query=document.getElementById("search").value.toLowerCase();
+ const cat=document.getElementById("category").value;
+ let list=events.filter(e=>(cat==="All"||e.category===cat)&&
+ (e.title+" "+e.venue+" "+e.description).toLowerCase().includes(query));
+ list.sort((a,b)=>document.getElementById("sort").value==="name"?a.title.localeCompare(b.title):a.date.localeCompare(b.date));
+ document.getElementById("eventList").innerHTML=list.map(e=>{
+  const count=registrations.filter(r=>r.eventId===e.id).length;
+  const left=Math.max(0,Number(e.capacity)-count);
+  return `<article class="card"><span class="tag">${e.category}</span><h3>${e.title}</h3><p>${e.description}</p><div class="meta">📅 ${e.date}<br>🕒 ${e.time}<br>📍 ${e.venue}<br>👥 ${left} seats available</div><br><button ${left===0?"disabled":""} onclick="selectEvent(${e.id})">${left===0?"Fully Booked":"Register for Event"}</button></article>`;
+ }).join("")||"<p>No matching events found.</p>";
+ document.getElementById("eventChoice").innerHTML='<option value="">Select an event</option>'+events.map(e=>`<option value="${e.id}">${e.title}</option>`).join("");
+ renderFaculty();
+}
+function selectEvent(id){
+ document.getElementById("eventChoice").value=String(id);
+ document.getElementById("register").scrollIntoView({behavior:"smooth"});
+}
+document.getElementById("registrationForm").addEventListener("submit",function(ev){
+ ev.preventDefault();
+ const name=document.getElementById("studentName").value.trim();
+ const studentId=document.getElementById("studentId").value.trim();
+ const email=document.getElementById("studentEmail").value.trim();
+ const eventId=Number(document.getElementById("eventChoice").value);
+ const event=events.find(e=>e.id===eventId);
+ if(!event){document.getElementById("message").textContent="Please select a valid event.";return;}
+ const count=registrations.filter(r=>r.eventId===eventId).length;
+ if(count>=Number(event.capacity)){document.getElementById("message").textContent="Sorry, this event is full.";return;}
+ if(registrations.some(r=>r.eventId===eventId&&r.studentId.toLowerCase()===studentId.toLowerCase())){
+  document.getElementById("message").textContent="You have already registered for this event.";return;
+ }
+ registrations.push({id:Date.now(),name,studentId,email,eventId,status:"Confirmed"});
+ save();renderEvents();
+ document.getElementById("message").textContent="Registration successful! Your status is Confirmed.";
+ this.reset();
+});
+function checkStatus(){
+ const id=document.getElementById("lookupId").value.trim().toLowerCase();
+ const rows=registrations.filter(r=>r.studentId.toLowerCase()===id);
+ document.getElementById("statusResults").innerHTML=rows.length?`<table><tr><th>Event</th><th>Student</th><th>Status</th></tr>${rows.map(r=>`<tr><td>${(events.find(e=>e.id===r.eventId)||{title:"Event removed"}).title}</td><td>${r.name}</td><td>${r.status}</td></tr>`).join("")}</table>`:"<p>No registrations found for that register number.</p>";
+}
+document.getElementById("facultyForm").addEventListener("submit",function(ev){
+ ev.preventDefault();
+ events.push({id:Date.now(),title:document.getElementById("newTitle").value.trim(),category:document.getElementById("newCategory").value,date:document.getElementById("newDate").value,time:document.getElementById("newTime").value,venue:document.getElementById("newVenue").value.trim(),capacity:Number(document.getElementById("newCapacity").value),description:document.getElementById("newDescription").value.trim()});
+ save();renderEvents();this.reset();
+ document.getElementById("updates").textContent="Latest update: A new campus event has been published!";
+});
+function renderFaculty(){
+ const counts=events.map(e=>({event:e,count:registrations.filter(r=>r.eventId===e.id).length}));
+ document.getElementById("facultySummary").innerHTML=`<p><strong>Total events:</strong> ${events.length} &nbsp; <strong>Total registrations:</strong> ${registrations.length}</p><table><tr><th>Event</th><th>Registered</th><th>Limit</th></tr>${counts.map(x=>`<tr><td>${x.event.title}</td><td>${x.count}</td><td>${x.event.capacity}</td></tr>`).join("")}</table>`;
+}
+renderEvents();
+</script>
+</body>
+</html>

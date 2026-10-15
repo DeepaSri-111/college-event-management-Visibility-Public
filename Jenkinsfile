@@ -54,60 +54,73 @@ pipeline {
             }
         }
 
-        stage('Deploy with Automatic Rollback') {
-            steps {
-                withCredentials([file(
-                    credentialsId: 'kubeconfig-file',
-                    variable: 'KUBECONFIG'
-                )]) {
-                    script {
-                        def previousImage = bat(
-                            script: "kubectl get deployment ${DEPLOYMENT_NAME} -o jsonpath=\"{.spec.template.spec.containers[0].image}\"",
-                            returnStdout: true
-                        ).trim()
+      
+stage('Deploy with Automatic Rollback') {
+    steps {
+        withCredentials([file(
+            credentialsId: 'kubeconfig-file',
+            variable: 'KUBECONFIG'
+        )]) {
+            script {
+                // Capture only the image name, not the echoed CMD command
+                def previousImage = bat(
+                    script: '@echo off\r\nkubectl get deployment college-event-management-deployment -o jsonpath="{.spec.template.spec.containers[0].image}"',
+                    returnStdout: true
+                ).trim()
 
-                        def targetImage = "${IMAGE_NAME}:${BUILD_NUMBER}"
+                echo "Previous working image: ${previousImage}"
 
-                        if (params.RELEASE_MODE == 'FAULTY_TEST') {
-                            targetImage = "${IMAGE_NAME}:bad-version"
-                            echo 'FAULTY_TEST selected: deploying a deliberately nonexistent image tag.'
-                        }
-
-                        echo "Previous working image: ${previousImage}"
-                        echo "Attempting deployment with: ${targetImage}"
-
-                        bat "kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=${targetImage}"
-
-                        def rolloutResult = bat(
-                            script: "kubectl rollout status deployment/${DEPLOYMENT_NAME} --timeout=90s",
-                            returnStatus: true
-                        )
-
-                        if (rolloutResult != 0) {
-                            echo 'Deployment failed or timed out. Restoring the previous working image.'
-
-                            bat "kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=${previousImage}"
-                            bat "kubectl rollout status deployment/${DEPLOYMENT_NAME} --timeout=180s"
-
-                            bat "kubectl get deployment ${DEPLOYMENT_NAME}"
-                            bat "kubectl get pods -l app=college-event-management"
-
-                            if (params.RELEASE_MODE == 'FAULTY_TEST') {
-                                error('Expected faulty deployment detected. Automatic rollback completed successfully.')
-                            } else {
-                                error('Deployment failed. Previous image restored.')
-                            }
-                        }
-
-                        bat "kubectl scale deployment/${DEPLOYMENT_NAME} --replicas=3"
-                        bat "kubectl rollout status deployment/${DEPLOYMENT_NAME} --timeout=180s"
-                        bat "kubectl get pods -l app=college-event-management"
-                        bat "kubectl get service ${SERVICE_NAME}"
-                    }
+                def targetImage
+                if (params.RELEASE_MODE == 'FAULTY_TEST') {
+                    targetImage = "${IMAGE_NAME}:bad-version"
+                    echo "Testing rollback using a deliberately invalid image."
+                } else {
+                    targetImage = "${IMAGE_NAME}:${BUILD_NUMBER}"
                 }
+
+                echo "Attempting deployment with: ${targetImage}"
+
+                bat "kubectl set image deployment/college-event-management-deployment college-event-management=${targetImage}"
+
+                int rolloutStatus = bat(
+                    script: '@echo off\r\nkubectl rollout status deployment/college-event-management-deployment --timeout=90s',
+                    returnStatus: true
+                )
+
+                if (rolloutStatus != 0) {
+                    echo "Deployment failed. Restoring the previous working image."
+
+                    bat "kubectl set image deployment/college-event-management-deployment college-event-management=${previousImage}"
+
+                    int rollbackStatus = bat(
+                        script: '@echo off\r\nkubectl rollout status deployment/college-event-management-deployment --timeout=180s',
+                        returnStatus: true
+                    )
+
+                    if (rollbackStatus != 0) {
+                        bat 'kubectl get pods -l app=college-event-management'
+                        error('Rollback failed. Check Kubernetes pod status.')
+                    }
+
+                    bat 'kubectl get deployment college-event-management-deployment'
+                    bat 'kubectl get pods -l app=college-event-management'
+
+                    if (params.RELEASE_MODE == 'FAULTY_TEST') {
+                        error('Expected faulty deployment detected. Automatic rollback completed successfully.')
+                    }
+
+                    error('Deployment failed. Previous image restored.')
+                }
+
+                bat 'kubectl scale deployment/college-event-management-deployment --replicas=3'
+                bat 'kubectl rollout status deployment/college-event-management-deployment --timeout=180s'
+                bat 'kubectl get deployment college-event-management-deployment'
+                bat 'kubectl get pods -l app=college-event-management'
+                bat 'kubectl get service college-event-management-service'
             }
         }
     }
+}
 
     post {
         success {

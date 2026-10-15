@@ -145,14 +145,80 @@ footer{text-align:center;background:#172554;color:white;padding:22px;margin-top:
 </footer>
 
 <script>
+
 const initialEvents = [
- {id:1,title:"CodeSprint Hackathon",category:"Technology",date:"2026-11-05",time:"09:00",venue:"Innovation Lab",capacity:100,description:"Build creative software solutions in a team-based coding challenge."},
- {id:2,title:"AI and Machine Learning Workshop",category:"Workshop",date:"2026-11-10",time:"10:00",venue:"Seminar Hall A",capacity:60,description:"Explore AI concepts, practical tools and machine learning applications."},
- {id:3,title:"Campus Cultural Fest",category:"Cultural",date:"2026-11-14",time:"15:00",venue:"Main Auditorium",capacity:250,description:"Celebrate music, dance, art and the diverse talents of our campus."},
- {id:4,title:"Interdepartment Sports Meet",category:"Sports",date:"2026-11-18",time:"08:00",venue:"College Sports Ground",capacity:150,description:"Join fellow students for team sports and friendly competition."},
- {id:5,title:"Career and Placement Connect",category:"Career",date:"2026-11-22",time:"11:00",venue:"Conference Hall",capacity:120,description:"Learn about career paths, interview preparation and industry expectations."},
- {id:6,title:"Cloud Computing Bootcamp",category:"Workshop",date:"2026-11-28",time:"09:30",venue:"Computer Lab 2",capacity:50,description:"Get introduced to cloud services, containers and deployment basics."}
+ {
+  id: 1,
+  title: "CodeSprint Hackathon",
+  category: "Technology",
+  date: "2026-11-05",
+  time: "09:00",
+  venue: "Innovation Lab",
+  capacity: 100,
+  description: "Build creative software solutions in a team-based coding challenge."
+ },
+ {
+  id: 2,
+  title: "AI and Machine Learning Workshop",
+  category: "Workshop",
+  date: "2026-11-10",
+  time: "10:00",
+  venue: "Seminar Hall A",
+  capacity: 60,
+  description: "Explore AI concepts, practical tools and machine learning applications."
+ },
+ {
+  id: 3,
+  title: "Campus Cultural Fest",
+  category: "Cultural",
+  date: "2026-11-14",
+  time: "15:00",
+  venue: "Main Auditorium",
+  capacity: 250,
+  description: "Celebrate music, dance, art and the diverse talents of our campus."
+ },
+ {
+  id: 4,
+  title: "Interdepartment Sports Meet",
+  category: "Sports",
+  date: "2026-11-18",
+  time: "08:00",
+  venue: "College Sports Ground",
+  capacity: 150,
+  description: "Join fellow students for team sports and friendly competition."
+ },
+ {
+  id: 5,
+  title: "Career and Placement Connect",
+  category: "Career",
+  date: "2026-11-22",
+  time: "11:00",
+  venue: "Conference Hall",
+  capacity: 120,
+  description: "Learn about career paths, interview preparation and industry expectations."
+ },
+ {
+  id: 6,
+  title: "Cloud Computing Bootcamp",
+  category: "Workshop",
+  date: "2026-11-28",
+  time: "09:30",
+  venue: "Computer Lab 2",
+  capacity: 50,
+  description: "Get introduced to cloud services, containers and deployment basics."
+ },
+ {
+  id: 7,
+  title: "Full Stack Web Development Workshop",
+  category: "Technology",
+  date: "2026-12-05",
+  time: "10:00",
+  venue: "Computer Lab 1",
+  capacity: 80,
+  description: "Learn frontend development, backend basics and how to build modern web applications."
+ }
 ];
+
 let events = JSON.parse(localStorage.getItem("cc_events") || "null") || initialEvents;
 let registrations = JSON.parse(localStorage.getItem("cc_registrations") || "[]");
 
